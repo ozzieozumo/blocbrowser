@@ -75,6 +75,8 @@
     for (UIView *v in @[self.webView, self.textField, self.backButton, self.forwardButton, self.stopButton, self.reloadButton]) {
         [mainView addSubview:v];
     }
+    
+    [self showWelcomeMessage];
     self.view = mainView;
     
 }
@@ -132,6 +134,17 @@
     [self updateButtonsAndTitle];
     
 }
+
+- (void) showWelcomeMessage {
+    
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Welcome to BlocBrowser", @"Welcome") message:@"Browse Safely" preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Ok", nil) style:UIAlertActionStyleCancel handler:nil];
+    [alert addAction:okAction];
+        
+    [self presentViewController:alert animated:YES completion:nil];
+    
+}
+
 
 #pragma mark    - UITextFieldDelegate
 
