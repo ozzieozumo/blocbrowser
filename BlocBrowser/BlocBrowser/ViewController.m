@@ -48,7 +48,7 @@
     self.textField.returnKeyType = UIReturnKeyDone;
     self.textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
     self.textField.autocorrectionType = UITextAutocorrectionTypeNo;
-    self.textField.placeholder = NSLocalizedString(@"Website URL", @"Placeholder text for web browser URL field");
+    self.textField.placeholder = NSLocalizedString(@"Website URL or Search Terms", @"Placeholder text for web browser URL field");
     self.textField.backgroundColor = [UIColor colorWithWhite:220/255.0f alpha:1];
     self.textField.delegate = self;
     
@@ -115,6 +115,16 @@
     [textField resignFirstResponder];
     
     NSString *URLString = textField.text;
+    
+    // Convert to a Google search if user entered spaces
+    
+    if ([URLString containsString:@" "]) {
+        
+        // replace spaces with + signs in the query string to avoid encoding issues
+        
+        URLString = [NSString stringWithFormat:@"google.com/search?q=%@", [URLString stringByReplacingOccurrencesOfString:@" " withString:@"+"]];
+    }
+    
     NSURL *URL = [NSURL URLWithString:URLString];
     
     // if no scheme entered, default to http
@@ -126,6 +136,7 @@
     if (URL) {
         NSURLRequest *request = [NSURLRequest requestWithURL:URL];
         [self.webView loadRequest:request];
+        
     }
     
     return NO;
