@@ -17,6 +17,7 @@
 @property (nonatomic, strong) UITapGestureRecognizer *tapGesture;
 @property (nonatomic, strong) UIPanGestureRecognizer *panGesture;
 @property (nonatomic, strong) UIPinchGestureRecognizer *pinchGesture;
+@property (nonatomic, strong) UILongPressGestureRecognizer *longPressGesture;
 
 
 @end
@@ -75,6 +76,9 @@
         self.pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(pinchFired:)];
         [self addGestureRecognizer:self.pinchGesture];
         
+        self.longPressGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressFired:)];
+        [self addGestureRecognizer:self.longPressGesture];
+        
         
     }
     return self;
@@ -92,6 +96,23 @@
         label.userInteractionEnabled = enabled;
         label.alpha = enabled ? 1.0 : 0.25;
     }
+    
+}
+
+- (void) applyColorsToLabels {
+    
+    // apply a (new) color scheme to the labels
+    
+    
+    for (NSInteger index = 0; index < self.labels.count; index++) {
+        
+        UILabel *currentLabel = self.labels[index];
+        UIColor *currentColor = self.colors[index];
+        
+        currentLabel.backgroundColor = currentColor;
+    }
+
+    
     
 }
 
@@ -187,6 +208,26 @@
         }
     }
     
+}
+
+- (void) longPressFired:(UILongPressGestureRecognizer *) recognizer {
+    
+    
+    if (recognizer.state == UIGestureRecognizerStateBegan) {
+        
+        NSLog(@"Long Press Gesture ended");
+        
+        NSMutableArray * newColors = [self.colors mutableCopy];
+        
+        for (NSInteger index = 0; index < newColors.count; index++) {
+            
+            newColors[index] = self.colors[(index + 1) % (newColors.count)];
+        }
+        
+        self.colors = [newColors copy];
+        [self applyColorsToLabels];
+        
+    }
 }
 
 

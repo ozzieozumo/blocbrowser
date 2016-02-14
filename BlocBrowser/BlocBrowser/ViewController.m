@@ -209,7 +209,7 @@
 - (void) floatingToolbar:(AwesomeFloatingToolbar *)toolbar didTryToResizeWithScale:(CGFloat)scale {
     
     // Since we may have already used a transform to scale the content of the view, the toolbar's frame property is undefined
-    // Therefore, resize the toolbar using its bounds property
+    // Therefore, resize the toolbar relative to its initial bounds and transform its content relative to initial transform
     
     CGRect potentialNewBounds = CGRectMake(toolbar.pinchInitialBounds.origin.x, toolbar.pinchInitialBounds.origin.y,
                                            toolbar.pinchInitialBounds.size.width * scale, toolbar.pinchInitialBounds.size.height * scale);
@@ -219,9 +219,9 @@
         // Resize the toolbar view by stretching its bounds
         toolbar.bounds = potentialNewBounds;
         
-        // Politely suggest that the main view should layout subviews
-        [self.view setNeedsLayout];
-        [self.view layoutIfNeeded];
+        // Layout the toolbar view, since its bounds have changed.  No need to layout other subviews since the toolbar is "floating"
+        
+        [toolbar layoutIfNeeded];
         
         // Resize the content of the toolbar view by scaling the transform relative to the initial transform
         toolbar.transform = CGAffineTransformScale(toolbar.pinchInitialTransform, scale, scale);
