@@ -22,6 +22,7 @@
 @property (nonatomic, strong) UIActivityIndicatorView *activityIndicator;
 @property (nonatomic, strong) AwesomeFloatingToolbar *awesomeToolbar;
 
+
 @end
 
 @implementation ViewController
@@ -58,11 +59,17 @@
     self.awesomeToolbar = [[AwesomeFloatingToolbar alloc] initWithFourTitles:@[kWebBrowserBackString, kWebBrowserForwardString, kWebBrowserStopString, kWebBrowserRefreshString]];
     self.awesomeToolbar.delegate = self;
     
+    // set the initial frame for the button toolbar
+    self.awesomeToolbar.frame = CGRectMake(20,100,280,60);
+
+    
         
     for (UIView *v in @[self.webView, self.textField, self.awesomeToolbar]) {
         [mainView addSubview:v];
     }
+    
     self.view = mainView;
+    
     
 }
 
@@ -80,8 +87,7 @@
     self.textField.frame = CGRectMake(0, 0, width, itemHeight);
     self.webView.frame = CGRectMake(0, CGRectGetMaxY(self.textField.frame), width, browserHeight);
     
-    // set the frame for the button toolbar
-    self.awesomeToolbar.frame = CGRectMake(20,100,280,60);
+    // don't do anything to the frame or bounds of the toolbar because it might be in the process of being resized
     
 }
 
@@ -199,5 +205,30 @@
         toolbar.frame = potentialNewFrame;
     }
 }
+
+- (void) floatingToolbar:(AwesomeFloatingToolbar *)toolbar didTryToResizeWithScale:(CGFloat)scale {
+    
+    // Since we may have already used a transform to scale the content of the view, the toolbar's frame property is undefined
+    // Therefore, resize the toolbar using its bounds property
+    
+    CGRect potentialNewBounds = CGRectMake(toolbar.pinchInitialBounds.origin.x, toolbar.pinchInitialBounds.origin.y,
+                                           toolbar.pinchInitialBounds.size.width * scale, toolbar.pinchInitialBounds.size.height * scale);
+    
+    
+    if (CGRectContainsRect(self.view.bounds, potentialNewBounds)) {
+        // Resize the toolbar view by stretching its bounds
+        toolbar.bounds = potentialNewBounds;
+        
+        // Politely suggest that the main view should layout subviews
+        [self.view setNeedsLayout];
+        [self.view layoutIfNeeded];
+        
+        // Resize the content of the toolbar view by scaling the transform relative to the initial transform
+        toolbar.transform = CGAffineTransformScale(toolbar.pinchInitialTransform, scale, scale);
+        
+    }
+    
+}
+
 
 @end

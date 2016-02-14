@@ -16,6 +16,7 @@
 
 - (void) floatingToolbar:(AwesomeFloatingToolbar *)toolbar didSelectButtonWithTitle:(NSString *)title;
 - (void) floatingToolbar:(AwesomeFloatingToolbar *)toolbar didTryToPanWithOffset:(CGPoint)offset;
+- (void) floatingToolbar:(AwesomeFloatingToolbar *)toolbar didTryToResizeWithScale:(CGFloat)scale;
 
 @end
 
@@ -26,5 +27,9 @@
 - (void) setEnabled:(BOOL)enabled forButtonWithTitle:(NSString*)title;
 
 @property (nonatomic, weak) id <AwesomeFloatingToolbarDelegate> delegate;
+
+// These properties are used by the didTryToResizeWithScale delegate method.  They store the initial transform and bounds of the view, i.e. at the start of the pinch.
+@property (nonatomic) CGAffineTransform pinchInitialTransform;
+@property (nonatomic) CGRect pinchInitialBounds;
 
 @end
