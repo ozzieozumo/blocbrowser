@@ -12,9 +12,8 @@
 
 @property (nonatomic, strong) NSArray *currentTitles;
 @property (nonatomic, strong) NSArray *colors;
-@property (nonatomic, strong) NSArray *labels;
+@property (nonatomic, strong) NSArray *buttons;
 @property (nonatomic, weak) UILabel *currentLabel;
-@property (nonatomic, strong) UITapGestureRecognizer *tapGesture;
 @property (nonatomic, strong) UIPanGestureRecognizer *panGesture;
 @property (nonatomic, strong) UIPinchGestureRecognizer *pinchGesture;
 @property (nonatomic, strong) UILongPressGestureRecognizer *longPressGesture;
@@ -37,39 +36,39 @@
                        [UIColor colorWithRed:222/255.0 green:165/255.0 blue:164/255.0 alpha:1],
                        [UIColor colorWithRed:255/255.0 green:179/255.0 blue:71/255.0 alpha:1]];
         
-        // create the labels
-        NSMutableArray *labelsArray = [[NSMutableArray alloc] init];
+        // create the buttons
+        NSMutableArray *buttonsArray = [[NSMutableArray alloc] init];
         
         for (NSString *title in self.currentTitles) {
             
-            UILabel *label = [[UILabel alloc] init];
-            label.userInteractionEnabled = NO;
-            label.alpha = 0.25;
+            UIButton *button = [[UIButton alloc] init];
+            button.userInteractionEnabled = NO;
+            button.alpha = 0.25;
             
             NSUInteger currentTitleIndex = [self.currentTitles indexOfObject:title];
             NSString *titleStr = [self.currentTitles objectAtIndex:currentTitleIndex];
             UIColor *color = [self.colors objectAtIndex:currentTitleIndex];
             
-            label.textAlignment = NSTextAlignmentCenter;
-            label.font = [UIFont systemFontOfSize:10];
-            label.text = titleStr;
-            label.backgroundColor = color;
-            label.textColor = [UIColor whiteColor];
+            button.titleLabel.textAlignment = NSTextAlignmentCenter;
+            button.titleLabel.font = [UIFont systemFontOfSize:10];
+            [button setTitle:titleStr forState:UIControlStateNormal];
+            button.backgroundColor = color;
+            button.titleLabel.textColor = [UIColor whiteColor];
             
-            [labelsArray addObject:label];
+            [button addTarget:self action:@selector(buttonPressed:) forControlEvents:UIControlEventTouchUpInside];
+            
+            [buttonsArray addObject:button];
         }
         
-        self.labels = labelsArray;
+        self.buttons = buttonsArray;
         
-        // add all the labels as subviews
+        // add all the buttons as subviews
         
-        for (UILabel *label in self.labels) {
-            [self addSubview:label];
+        for (UIButton *button in self.buttons) {
+            [self addSubview:button];
         }
         
-        self.tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapFired:)];
-        [self addGestureRecognizer:self.tapGesture];
-         
+        
         self.panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panFired:)];
         [self addGestureRecognizer:self.panGesture];
         
@@ -85,6 +84,7 @@
     
 }
 
+
 #pragma mark - Button Enabling
 
 - (void) setEnabled:(BOOL)enabled forButtonWithTitle:(NSString*)title {
@@ -92,24 +92,24 @@
     NSUInteger index = [self.currentTitles indexOfObject:title];
     
     if (index != NSNotFound){
-        UILabel *label = [self.labels objectAtIndex:index];
-        label.userInteractionEnabled = enabled;
-        label.alpha = enabled ? 1.0 : 0.25;
+        UIButton *button = [self.buttons objectAtIndex:index];
+        button.userInteractionEnabled = enabled;
+        button.alpha = enabled ? 1.0 : 0.25;
     }
     
 }
 
-- (void) applyColorsToLabels {
+- (void) applyColorsToButtons {
     
     // apply a (new) color scheme to the labels
     
     
-    for (NSInteger index = 0; index < self.labels.count; index++) {
+    for (NSInteger index = 0; index < self.buttons.count; index++) {
         
-        UILabel *currentLabel = self.labels[index];
+        UIButton *currentButton = self.buttons[index];
         UIColor *currentColor = self.colors[index];
         
-        currentLabel.backgroundColor = currentColor;
+        currentButton.backgroundColor = currentColor;
     }
 
     
@@ -120,35 +120,35 @@
     
     // layout the labels in a 2 x 2 grid
     
-    for (UILabel *label in self.labels) {
-        NSUInteger index = [self.labels indexOfObject:label];
+    for (UILabel *button in self.buttons) {
+        NSUInteger index = [self.buttons indexOfObject:button];
         
-        CGFloat labelHeight = CGRectGetHeight(self.bounds) / 2;
-        CGFloat labelWidth = CGRectGetWidth(self.bounds) / 2;
-        CGFloat labelX = 0;
-        CGFloat labelY = 0;
+        CGFloat buttonHeight = CGRectGetHeight(self.bounds) / 2;
+        CGFloat buttonWidth = CGRectGetWidth(self.bounds) / 2;
+        CGFloat buttonX = 0;
+        CGFloat buttonY = 0;
         
         if (index < 2) {
             // first two labels go on top row
-            labelY = 0;
+            buttonY = 0;
         } else {
             // next two labels go on second row
-            labelY = CGRectGetHeight(self.bounds) / 2;
+            buttonY = CGRectGetHeight(self.bounds) / 2;
         }
         
         if (index % 2 == 0) {
             // even items in first column
-            labelX = 0;
+            buttonX = 0;
         } else {
             //odd items in second column
-            labelX = CGRectGetWidth(self.bounds) / 2;
+            buttonX = CGRectGetWidth(self.bounds) / 2;
         }
         
-        label.frame = CGRectMake(labelX, labelY, labelWidth, labelHeight);
+        button.frame = CGRectMake(buttonX, buttonY, buttonWidth, buttonHeight);
     }
 }
 
-#pragma mark - Gesture Handling
+#pragma mark - Button Press and Gesture Handling
 
 - (UILabel *)labelFromTouches:(NSSet *)touches withEvent:(UIEvent *)event {
     
@@ -165,18 +165,16 @@
     }
 }
 
-- (void) tapFired:(UITapGestureRecognizer *)recognizer {
-    if (recognizer.state == UIGestureRecognizerStateRecognized) {
-        CGPoint location = [recognizer locationInView:self];
-        UIView *tappedView = [self hitTest:location withEvent:nil];
-        
-        if ([self.labels containsObject:tappedView]) {
-            if([self.delegate respondsToSelector:@selector(floatingToolbar:didSelectButtonWithTitle:)]) {
-                [self.delegate floatingToolbar:self didSelectButtonWithTitle:((UILabel*)tappedView).text];
-            }
-        }
+- (void) buttonPressed:(UIButton *) button {
+    
+    // check for the delegate, then send the appropriate message
+    
+    if ([self.delegate respondsToSelector:@selector(floatingToolbar:didSelectButtonWithTitle:)]) {
+        [self.delegate floatingToolbar:self didSelectButtonWithTitle:button.titleLabel.text];
     }
+    
 }
+
 
 - (void) panFired:(UIPanGestureRecognizer *)recognizer {
     if (recognizer.state == UIGestureRecognizerStateChanged) {
@@ -225,7 +223,7 @@
         }
         
         self.colors = [newColors copy];
-        [self applyColorsToLabels];
+        [self applyColorsToButtons];
         
     }
 }
