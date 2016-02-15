@@ -31,9 +31,7 @@
     
     self.edgesForExtendedLayout = UIRectEdgeNone;
     
-    self.activityIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.activityIndicator];
-    
+    [self showWelcomeMessage];
 }
 
 - (void)loadView {
@@ -76,7 +74,6 @@
         [mainView addSubview:v];
     }
     
-    [self showWelcomeMessage];
     self.view = mainView;
     
 }
@@ -104,6 +101,7 @@
         currentButtonX += buttonWidth;
     }
 }
+
 
 - (void) addButtonTargets {
     
